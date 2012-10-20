@@ -1,8 +1,10 @@
 package dsa.mus.lib;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -29,6 +31,7 @@ public class MySQL {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();			
 			
 			// Setup the connection with the DB
+			
 			connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "root", getPass());	
 			
 			// Statements allow to issue SQL queries to the database
