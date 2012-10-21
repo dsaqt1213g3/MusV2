@@ -18,7 +18,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 
-import dsa.mus.lib.CPlayer;
+import dsa.mus.lib.JsonQueris;
 
 public class Client {
 	
@@ -40,7 +40,7 @@ public class Client {
 		int respuesta = 0;
 		
 		Gson g = new Gson(); 		 
-		String json = g.toJson(new CPlayer(name, pass));
+		String json = g.toJson(new JsonQueris(name, pass));
 		
 		StringEntity stringEntity = new StringEntity(json);
 		stringEntity.setContentType("application/json");

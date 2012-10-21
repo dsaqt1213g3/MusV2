@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
 
-import dsa.mus.lib.CPlayer;
+import dsa.mus.lib.JsonQueris;
 import dsa.mus.lib.MySQL;
 
 
@@ -263,6 +263,8 @@ public class ObtenerNombre extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
+	
+	
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -304,11 +306,27 @@ public class ObtenerNombre extends HttpServlet {
 		} 
 		
 		Gson g = new Gson(); 
-		CPlayer player = g.fromJson(n, CPlayer.class);
+		JsonQueris jQueri = g.fromJson(n, JsonQueris.class);
 		
-		System.out.println(player.toString());
+		System.out.println(n);
 		
-		autenticacion(request, response, player.getName(), player.getPassword());
+		switch (jQueri.getType()) {
+		case ACCES:
+			autenticacion(request, response, jQueri.getName(), jQueri.getPassword());
+			break;
+
+		case GUARDAR_PARTIDA:
+			String s = "insert into partida values (null,'"+ jQueri.getGanador1() +"', '" +
+   													       jQueri.getGanador2() +"', '" + 
+													       jQueri.getJugador3() +"', '" + 
+													       jQueri.getJugador4() +"');";
+			mysql.execute(s);
+			break;
+			
+		default:
+			break;
+		}
+		
 	}
 	
 	@Override
