@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.sql.SQLException;
+import java.util.Random;
 
 import dsa.mus.lib.CPlayer;
 import dsa.mus.lib.MySQL;
@@ -41,43 +41,27 @@ public class AttendClientThread extends Thread {
 	{
 		while(true)
     	{    
-			CPlayer player;
+			String name;
 			try {
-				player = (CPlayer) sIn.readObject();
+				name = (String) sIn.readObject();
 			} catch (ClassNotFoundException | IOException e) {
 				System.out.println(e.getMessage());
 				return;
 			}
-			
-    		mySQL.executeQuery("select * from jugador where nombre='" + player.getName() + "' and " +
-    				"contrasena='" + player.getPassword() + "';");
-	    	
-    		try {
-    			boolean autentication = mySQL.getResultSet().last();
-    			sOut.writeObject(autentication);
-    			if(!autentication)
-    			{
-    				System.out.println("Autenticacion incorrecta");
-    				return;
-    			}
-    			else
-    				System.out.println(Server.getServerThreads().size() + "- Autenticacion correcta de: " + player.getName());    			
-    		} catch (IOException | SQLException e) {
-				System.out.println(e.getMessage());
-				return;
-			}
     		
-    		this.player = player;
+    		this.player = new CPlayer(name, "");
    	
 			Server.getServerThreads().add(this);
     		    		
     		if(Server.getServerThreads().size() >= 4)
     		{	
-    			int ganador = (int)(Math.random())%2;
+    			int ganador = (int)(new Random().nextInt())%2 + 1;
     			AttendClientThread[] aCT = Server.getServerThreads().toArray(new AttendClientThread[Server.getServerThreads().size()]);
     			for( int i = 0; i < aCT.length; i++)
 					try {
-						aCT[i].sOut.writeObject( (i == ganador)||(i == ganador+2));
+						if((i == ganador)||(i == ganador+2))
+							
+						aCT[i].sOut.writeObject((i == ganador)||(i == ganador+2));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

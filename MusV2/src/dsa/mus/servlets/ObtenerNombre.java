@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
+
+import dsa.mus.lib.CPlayer;
 import dsa.mus.lib.MySQL;
 
 
@@ -41,15 +44,22 @@ public class ObtenerNombre extends HttpServlet {
 		mysql = new MySQL();	
 	}
 	
-	private void autenticacion(HttpServletRequest request, HttpServletResponse response)
+	private void autenticacion(HttpServletRequest request, HttpServletResponse response, String nombre, String password)
 	{
 		String nombre1=null;
 		String password1=null;
 		
-		String nombre = (String) request.getParameter("nombre");
+		PrintWriter out;
+		try {
+			out = response.getWriter();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return;
+		}
+		
+	
 		System.out.println ("he recibido este nombre: "+ nombre);
-
-		String password = (String) request.getParameter("password");
 		System.out.println ("he recibido este password: "+ password);
 		
 		try {
@@ -77,37 +87,51 @@ public class ObtenerNombre extends HttpServlet {
 			
 			if (password1 == null)
 			{
-				request.setAttribute("autenticacionOK", false);
-				RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
-				try {
-					view.forward(request, response);
-				} catch (ServletException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
+				if(request.getContentType()==null)
+				{		
+					request.setAttribute("autenticacionOK", false);
+					RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
+					try {
+						view.forward(request, response);
+					} catch (ServletException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}	
+				}
+				else
+					out.write(0); // Autenticacion incorrecta
 			}
 			else if (password1.equals(password)) 
 			{	
-				request.setAttribute("nom", nombre);
-				request.setAttribute("autenticacionOK", true);
-				RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
-				try {
-					view.forward(request, response);
-				} catch (ServletException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}		
+				if(request.getContentType()==null)
+				{
+					request.setAttribute("nom", nombre);
+					request.setAttribute("autenticacionOK", true);
+					RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
+					try {
+						view.forward(request, response);
+					} catch (ServletException e) {
+						e.printStackTrace();
+					}
+				}	
+				else
+					out.write(1); // Autenticacion correcta
 			}
 			else
-			{				
-				request.setAttribute("autenticacionOK", false);
-				RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
-				try {
-					view.forward(request, response);
-				} catch (ServletException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			{			
+				if(request.getContentType()==null)
+				{
+					request.setAttribute("autenticacionOK", false);
+					RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
+					try {
+						view.forward(request, response);
+					} catch (ServletException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				else
+					out.write(0); // Autenticacion incorrecta
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -251,7 +275,7 @@ public class ObtenerNombre extends HttpServlet {
 		
 		switch (navegador) {
 		case "autenticacion":
-				autenticacion(request, response);
+				autenticacion(request, response, (String) request.getParameter("nombre"), (String) request.getParameter("password"));
 			break;
 		
 		case "registro":
@@ -268,6 +292,23 @@ public class ObtenerNombre extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		
+		String navegador = (String) request.getParameter("name");
+		System.out.println(navegador);
+		String n = "";
+		int num = request.getReader().read() ;
+		while(num != -1)
+		{
+			n += (char)num;
+			num = request.getReader().read();
+		} 
+		
+		Gson g = new Gson(); 
+		CPlayer player = g.fromJson(n, CPlayer.class);
+		
+		System.out.println(player.toString());
+		
+		autenticacion(request, response, player.getName(), player.getPassword());
 	}
 	
 	@Override
