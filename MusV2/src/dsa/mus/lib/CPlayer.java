@@ -18,6 +18,11 @@ public class CPlayer implements Serializable
 		this.password = password;
 		this.age = age;
 	}
+	public CPlayer(String name, String password) {
+		super();
+		this.name = name;
+		this.password = password;
+	}
 
 	
 	public String getName() {
