@@ -23,6 +23,7 @@ public class MySQL {
 	ResultSet resultSet = null;
 	
 	private final static String passFile = "mysqlPass.txt";
+	private final static String sqlFile = "mus_database.sql";
 	
 	public MySQL() {
 		super();		
@@ -150,4 +151,13 @@ public class MySQL {
 			return -1;
 		}
 	}	
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		MySQL mysql = new MySQL();
+		mysql.executeFile(sqlFile);
+		System.out.println("Base de datos reiniciada.");
+	}
 }

@@ -8,12 +8,73 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import dsa.mus.lib.CPlayer;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
+import com.google.gson.Gson;
+
+import dsa.mus.lib.JsonQueris;
 
 public class Client {
 	
-	private static void clientOperations(ObjectOutputStream sOut, ObjectInputStream sIn, BufferedReader bf) throws IOException, ClassNotFoundException
+	public final static String httpServer = "http://localhost:8080/MusV2/ObtenerNombre";
+	
+	private static void clientOperations( ObjectInputStream sIn, ObjectOutputStream sOut, BufferedReader bf) throws IOException, ClassNotFoundException
 	{
+    	
+    	if((boolean)sIn.readObject())
+    		System.out.println("has ganado.");
+    	else
+    		System.out.println("has perdido");
+	}
+	
+	private static boolean autenticacionHTTP(String name, String pass) throws IOException
+	{
+		HttpClient httpclient = new DefaultHttpClient();		
+		HttpPost httppost = new HttpPost(httpServer);
+		int respuesta = 0;
+		
+		Gson g = new Gson(); 		 
+		String json = g.toJson(new JsonQueris(name, pass));
+		
+		StringEntity stringEntity = new StringEntity(json);
+		stringEntity.setContentType("application/json");
+		httppost.setEntity(stringEntity);
+		
+		HttpResponse response = httpclient.execute(httppost);
+		HttpEntity resEntity = response.getEntity();
+		
+		if (resEntity != null) {
+			respuesta = resEntity.getContent().read();
+		}
+		EntityUtils.consume(resEntity);
+		
+		if(respuesta == 1)
+		{
+			System.out.println("Validacion satisfactoria");
+			return true;
+		}
+		else 
+		{
+			System.out.println("Validacion erronea");
+			return false;
+		}
+	}
+
+	public static void main(String[] args) throws IOException
+	{
+		Socket MyClient = null;
+		ObjectInputStream sIn = null;
+		ObjectOutputStream sOut = null;
+		
+		InputStreamReader isr = new InputStreamReader(System.in);
+		BufferedReader bf = new BufferedReader (isr);
+		
 		String name = "", pass = "";
         int age = 0; 	
     		
@@ -22,49 +83,11 @@ public class Client {
     	name = bf.readLine();
     	System.out.print("Introduce la contraseña: ");
     	pass = bf.readLine();
-    	
-		/* Enviando datos */ 
-    	sOut.writeObject(new CPlayer(name, pass,age));
 		
-		/* Recepcion de datos del servidor */
-    	if((boolean)sIn.readObject())
-    		System.out.println("Validacion satisfactoria");
-    	else 
-    	{
-    		System.out.println("Error en la validacion");
-    		return;
-    	}
-    	
-    	if((boolean)sIn.readObject())
-    		System.out.println("has ganado.");
-    	else
-    		System.out.println("has perdido");
-	}
-	
-	private static void clientConection(ObjectInputStream sIn, ObjectOutputStream sOut) throws IOException  
-	{
-		InputStreamReader isr = new InputStreamReader(System.in);
-		BufferedReader bf = new BufferedReader (isr);
-		   	  
-    	try {
-			clientOperations(sOut, sIn, bf);
-		} catch (ClassNotFoundException e) {
-			System.out.println(e.getMessage());	        
-	        return;
-		}
-       
-		isr.close();
-		bf.close();
-	}
-	
-	public static void main(String[] args) throws IOException
-	{
-		Socket MyClient = null;
-		ObjectInputStream sIn = null;
-		ObjectOutputStream sOut = null;
-				
+		if(!autenticacionHTTP(name, pass)) return;
+		
 		try
-		{
+		{	
 			System.out.println("Conectando con el servidor.");
 			MyClient = new Socket(InetAddress.getLocalHost(), 4009);			
 			
@@ -77,8 +100,17 @@ public class Client {
 	        System.exit(-1);
 		}   
 		
-		clientConection(sIn, sOut);
+		sOut.writeObject(name);
+		
+		try {
+			clientOperations(sIn, sOut, bf);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
+		isr.close();
+		bf.close();
         MyClient.close();
         sIn.close();
         sOut.close();				

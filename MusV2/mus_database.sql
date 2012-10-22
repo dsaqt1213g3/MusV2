@@ -28,7 +28,7 @@ insert into jugador values ('uri','ramirez',28);
 insert into jugador values ('albert','raventos',23);
 insert into jugador values ('ainhoa','martin',20);
 insert into jugador values ('a','a',0);
-insert into jugador values ('b','a',0);
+insert into jugador values ('b','b',0);
 insert into jugador values ('c','c',0);
 insert into jugador values ('d','d',0);
 
