@@ -41,6 +41,7 @@ public class ObtenerNombre extends HttpServlet {
 		mysql = new MySQL();	
 	}
 	
+	
 	private void autenticacion(HttpServletRequest request, HttpServletResponse response)
 	{
 		String nombre1=null;
@@ -126,45 +127,36 @@ public class ObtenerNombre extends HttpServlet {
 		String password = (String) request.getParameter("password");
 		System.out.println ("he recibido este password: "+ password);
 		
-		try {
-		
-			if (nombre.length()<6){
-				PrintWriter out = response.getWriter();
-				out.println ("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd>");
-				out.println ("<html>");
-				out.println ("<head>");
-				out.println ("<meta http-equiv=\"Content-Type\" content=\"text/html;  charset-ISO-8859-1\">");
-				out.println ("<title>Insert title here</title>");
-				out.println ("</head>");
-				out.println ("<body>");
-				out.println ("<h1> el nombre debe ser de 6 digitos como minimo </h1>");
-				Calendar calendario = new GregorianCalendar ();
-				int hora = calendario.get(Calendar.HOUR_OF_DAY);
-				int minute = calendario.get(Calendar.MINUTE);
-				out.println ("<h2> son las " + hora+":"+minute+ " </h2>");
-				out.println ("</body>");
-				out.println ("</html>");
-				System.out.println ("Fin");
+
+		 try {		
+			
+			if (nombre.length()<6)
+			{
+				request.setAttribute("nombreok", false);
+				RequestDispatcher view = request.getRequestDispatcher("/registro.jsp");
+				try {
+					view.forward(request, response);
+				} catch (ServletException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
 			}
-			else if (password.length()<6){
-				PrintWriter out = response.getWriter();
-				out.println ("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd>");
-				out.println ("<html>");
-				out.println ("<head>");
-				out.println ("<meta http-equiv=\"Content-Type\" content=\"text/html;  charset-ISO-8859-1\">");
-				out.println ("<title>Insert title here</title>");
-				out.println ("</head>");
-				out.println ("<body>");
-				out.println ("<h1> el password debe ser de 6 digitos como minimo</h1>");
-				Calendar calendario = new GregorianCalendar ();
-				int hora = calendario.get(Calendar.HOUR_OF_DAY);
-				int minute = calendario.get(Calendar.MINUTE);
-				out.println ("<h2> son las " + hora+":"+minute+ " </h2>");
-				out.println ("</body>");
-				out.println ("</html>");
-				System.out.println ("Fin");
+			else if (password.length()<6) 
+			{	
+				request.setAttribute("contrasenaok", false);
+				RequestDispatcher view = request.getRequestDispatcher("/registro.jsp");
+				try {
+					view.forward(request, response);
+				} catch (ServletException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		
 			}
-			else{
+			else
+			{				
+			request.setAttribute("nombreok", true);
+			request.setAttribute("contrasenaok", true);
+								
 				try{
 					mysql.executeQuery("select nombre from jugador where nombre='"+nombre+"'");
 					while (mysql.getResultSet().next()) 
@@ -172,7 +164,8 @@ public class ObtenerNombre extends HttpServlet {
 						mysql.getResultSet().getString("nombre");				
 					//	System.out.println("Nombre: " + nombre1 + " Password: " + password1);
 					}			
-					}catch (Exception e) 
+					}
+				catch (Exception e) 
 					{
 						System.out.println ("Error base de datos " + e);
 					} 
@@ -188,57 +181,42 @@ public class ObtenerNombre extends HttpServlet {
 								
 								System.out.println("Nombre: " + nombre1 + " Password: " + password1);
 							}			
-						}catch (Exception e) 
+						}
+						catch (Exception e) 
 						{
 							System.out.println ("Error base de datos " + e);
 						} 
-						
-						
-						PrintWriter out = response.getWriter();
-						out.println ("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd>");
-						out.println ("<html>");
-						out.println ("<head>");
-						out.println ("<meta http-equiv=\"Content-Type\" content=\"text/html;  charset-ISO-8859-1\">");
-						out.println ("<title>Insert title here</title>");
-						out.println ("</head>");
-						out.println ("<body>");
-						out.println ("<h1> hola  "+ nombre  + "</h1>");
-						out.println ("<h1> tu password es "+ password  + "</h1>");
-						Calendar calendario = new GregorianCalendar ();
-						int hora = calendario.get(Calendar.HOUR_OF_DAY);
-						int minute = calendario.get(Calendar.MINUTE);
-						out.println ("<h2> son las " + hora+":"+minute+ " </h2>");
-						out.println ("</body>");
-						out.println ("</html>");
-						System.out.println ("Fin");
-						
 					}
-					else {
-						PrintWriter out = response.getWriter();
-						out.println ("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd>");
-						out.println ("<html>");
-						out.println ("<head>");
-						out.println ("<meta http-equiv=\"Content-Type\" content=\"text/html;  charset-ISO-8859-1\">");
-						out.println ("<title>Insert title here</title>");
-						out.println ("</head>");
-						out.println ("<body>");
-						out.println ("<h1> hola, el nombre  "+ nombre  + " ya esta registrado</h1>");
-						out.println ("<h1> regístrese con otro nombre de usuario </h1>");
-						Calendar calendario = new GregorianCalendar ();
-						int hora = calendario.get(Calendar.HOUR_OF_DAY);
-						int minute = calendario.get(Calendar.MINUTE);
-						out.println ("<h2> son las " + hora+":"+minute+ " </h2>");
-						out.println ("</body>");
-						out.println ("</html>");
-						System.out.println ("Fin");
-					
+					if (password1.equals(password)){
+						
+					request.setAttribute("usuariolibre", true);
+					RequestDispatcher view = request.getRequestDispatcher("/registro.jsp");
+					try {
+						view.forward(request, response);
+						}
+					catch (ServletException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+											}		
 					}
+				else
+				{				
+					request.setAttribute("usuariolibre", false);
+					RequestDispatcher view = request.getRequestDispatcher("/registro.jsp");
+					try {
+						view.forward(request, response);
+					} catch (ServletException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} 
+		 }catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-	}
+		
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

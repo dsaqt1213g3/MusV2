@@ -67,8 +67,6 @@ public class RegistroNombre extends HttpServlet {
 		System.out.println ("he recibido este password: "+ password);
 		
 		
-		
-		
 			
 	}
 
