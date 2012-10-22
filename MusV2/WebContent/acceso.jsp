@@ -28,8 +28,13 @@ background-position: 0px 0px;
 <body>
 
 <%
-	if(autenticacionOK)
+	if(autenticacionOK){
 		out.println ("<h1> hola de nuevo "+ (String) request.getAttribute("nom") + "</h1>");
+		out.println ("<h1> Estadisticas de partidas:</h1>");
+		out.println ("<h1> Partidas Ganadas "+ (Integer) request.getAttribute("Partidas Ganadas") + "</h1>");
+		out.println ("<h1> Partidas Totales "+ (Integer) request.getAttribute("Partidas Totales") + "</h1>");
+	}
+		
 	else
 		out.println ("<h1> No has sido autenticado correctamente.</h1>");
 %>

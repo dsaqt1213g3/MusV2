@@ -105,7 +105,19 @@ public class ObtenerNombre extends HttpServlet {
 			{	
 				if(request.getContentType()==null)
 				{
+					mysql.executeQuery("select * from partida where ganado1='"+nombre+"';");
+					int ganador1 = mysql.getResultLength();
+					mysql.executeQuery("select * from partida where ganado2='"+nombre+"';");
+					int ganadorT = ganador1 + mysql.getResultLength();
+					mysql.executeQuery("select * from partida where jugador3='"+nombre+"';");
+					int perdedor1 = mysql.getResultLength();
+					mysql.executeQuery("select * from partida where jugador4='"+nombre+"';");
+					int partidasT = ganadorT + perdedor1 + mysql.getResultLength();
+					
 					request.setAttribute("nom", nombre);
+					request.setAttribute("Partidas Totales", (Integer)partidasT);
+					request.setAttribute("Partidas Ganadas", (Integer)ganadorT);
+					
 					request.setAttribute("autenticacionOK", true);
 					RequestDispatcher view = request.getRequestDispatcher("/acceso.jsp");
 					try {
@@ -202,7 +214,7 @@ public class ObtenerNombre extends HttpServlet {
 					} 
 					if (nombre1==null){
 						try {
-							mysql.execute("insert into jugador values ('"+nombre+"', '"+password+"');");
+							mysql.execute("insert into jugador values ('"+nombre+"', '"+password+"',null);");
 							mysql.executeQuery("select * from jugador");
 							System.out.println("Contenido de la base de datos");
 							while (mysql.getResultSet().next()) 
