@@ -1,7 +1,14 @@
-package dsa.mus.consola;
+package dsa.mus.lib;
 
-public class SpanishCard extends Card {
+import java.io.Serializable;
 
+public class SpanishCard extends Card implements Serializable {
+
+	/**
+	 * UID version del dia 22/10/2012
+	 */
+	private static final long serialVersionUID = 22102012L;
+	
 	private final static String[] SUITS = {"0","C","E","B"};
 	private final static String[] NUMBERS = {"1","2","3","4","5","6","7","10","11","12"};
 	

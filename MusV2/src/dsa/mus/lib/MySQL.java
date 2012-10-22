@@ -1,10 +1,8 @@
 package dsa.mus.lib;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -134,7 +132,7 @@ public class MySQL {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println(e.getMessage());
-			return -1;
+			return 0;
 		}
 	}
 	

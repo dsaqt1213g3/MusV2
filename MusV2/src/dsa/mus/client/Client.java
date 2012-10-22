@@ -18,25 +18,78 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 
+import dsa.mus.lib.CMessage;
+import dsa.mus.lib.ConsolePlayer;
 import dsa.mus.lib.JsonQueris;
+import dsa.mus.lib.TypeMessage;
+import dsa.mus.server.Server;
 
 public class Client {
 	
-	public final static String httpServer = "http://localhost:8080/MusV2/ObtenerNombre";
-	
-	private static void clientOperations( ObjectInputStream sIn, ObjectOutputStream sOut, BufferedReader bf) throws IOException, ClassNotFoundException
+	private static void clientOperations(ObjectInputStream sIn, ObjectOutputStream sOut, String name) throws ClassNotFoundException, IOException
 	{
+    	ConsolePlayer player = new ConsolePlayer(name, 0);
     	
-    	if((boolean)sIn.readObject())
-    		System.out.println("has ganado.");
-    	else
-    		System.out.println("has perdido");
+    	System.out.println("Esperando partida.");
+    	boolean fin = false;
+    	while(!fin)
+    	{
+    		CMessage message = 	CMessage.Error();
+			try {
+				message = (CMessage)sIn.readObject();
+			} catch (IOException e) {
+				System.out.println("Error " + e.getMessage());
+				return;
+			}
+    		switch (message.getCode()) {
+    		case START_GAME:
+    			System.out.println("Iniciando partida");
+    			//sOut.writeObject(1);
+    			break;
+    		
+			case IS_MUS:				
+				sOut.writeObject(new CMessage(TypeMessage.IS_MUS,player.isMus()));
+				break;
+				
+			case DISCARD:
+				sOut.writeObject(new CMessage(TypeMessage.DISCARD, player.discard()));
+				break;
+				
+			case RECEIVE:
+				player.receive(message.getCards());
+				break;
+				
+			case WINNER:
+				if(message.getBool())
+					System.out.println("Has ganado.");
+				else 
+					System.out.println("Has perdido.");
+				break;
+				
+			case SHOW_HAND:
+				player.showHand();
+				break;
+				
+			case  FINISH_GAME:
+				// TODO preguntar si quiere volver a jugar y avisar al servidor
+				break;
+				
+			case DISCONNECT:
+				System.out.println("Desconectado del servidor");
+				
+				fin = true;
+				break;
+
+			default:
+				break;
+			}
+    	}
 	}
 	
 	private static boolean autenticacionHTTP(String name, String pass) throws IOException
 	{
 		HttpClient httpclient = new DefaultHttpClient();		
-		HttpPost httppost = new HttpPost(httpServer);
+		HttpPost httppost = new HttpPost(Server.httpServer);
 		int respuesta = 0;
 		
 		Gson g = new Gson(); 		 
@@ -65,7 +118,7 @@ public class Client {
 			return false;
 		}
 	}
-
+	
 	public static void main(String[] args) throws IOException
 	{
 		Socket MyClient = null;
@@ -76,7 +129,6 @@ public class Client {
 		BufferedReader bf = new BufferedReader (isr);
 		
 		String name = "", pass = "";
-        int age = 0; 	
     		
         /* Introduccion de datos  */
 		System.out.print("Introduce el nombre: ");
@@ -103,9 +155,8 @@ public class Client {
 		sOut.writeObject(name);
 		
 		try {
-			clientOperations(sIn, sOut, bf);
+			clientOperations(sIn, sOut, name);
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
@@ -113,6 +164,6 @@ public class Client {
 		bf.close();
         MyClient.close();
         sIn.close();
-        sOut.close();				
+        sOut.close();			
 	}
 }

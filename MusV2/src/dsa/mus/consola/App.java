@@ -1,5 +1,8 @@
 package dsa.mus.consola;
 
+import dsa.mus.lib.ConsolePlayer;
+import dsa.mus.lib.MusEngine;
+
 public class App 
 {	
 	

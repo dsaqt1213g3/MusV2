@@ -1,4 +1,4 @@
-package dsa.mus.consola;
+package dsa.mus.lib;
 
 public class MusDeck {
 	private Card[] cards;

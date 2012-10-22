@@ -11,14 +11,16 @@ import dsa.mus.lib.MySQL;
 
 public class Server {
 	
-	private static List<AttendClientThread> attendClient = new ArrayList<AttendClientThread>();
+	public final static String httpServer = "http://localhost:8080/MusV2/ObtenerNombre";
 	
-	public static List<AttendClientThread> getServerThreads()
+	private List<AttendClientThread> clientWithoutMach = new ArrayList<AttendClientThread>();
+	
+	public List<AttendClientThread> getClientWithoutMach()
 	{
-		return attendClient;
+		return clientWithoutMach;
 	}
 	
-	public static void runServer(ServerSocket MyService, MySQL mySQL)
+	public void run(ServerSocket MyService, MySQL mySQL)
 	{
 		Socket serviceSocket = null;	
 		
@@ -28,9 +30,9 @@ public class Server {
 		    {	    	
 				serviceSocket = MyService.accept();
 				  	
-		    	System.out.println("Usuario conectedo."+ serviceSocket.getLocalAddress().toString()); 
+		    	System.out.println("Usuario conectedo." + serviceSocket.getLocalAddress().toString()); 
 		    	
-		    	new AttendClientThread(n++, serviceSocket, mySQL).start();		    	
+		    	new AttendClientThread(n++, serviceSocket, mySQL, this).start();
 		    }	
 		}
         catch (IOException e) {
@@ -58,7 +60,7 @@ public class Server {
         	return;
         }
 	    
-	    runServer(MyService, mySQL);
+	    new Server().run(MyService, mySQL);
 	 	
 	}
 	

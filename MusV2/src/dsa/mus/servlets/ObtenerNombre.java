@@ -3,8 +3,6 @@ package dsa.mus.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -105,9 +103,9 @@ public class ObtenerNombre extends HttpServlet {
 			{	
 				if(request.getContentType()==null)
 				{
-					mysql.executeQuery("select * from partida where ganado1='"+nombre+"';");
+					mysql.executeQuery("select * from partida where ganador1='"+nombre+"';");
 					int ganador1 = mysql.getResultLength();
-					mysql.executeQuery("select * from partida where ganado2='"+nombre+"';");
+					mysql.executeQuery("select * from partida where ganador2='"+nombre+"';");
 					int ganadorT = ganador1 + mysql.getResultLength();
 					mysql.executeQuery("select * from partida where jugador3='"+nombre+"';");
 					int perdedor1 = mysql.getResultLength();

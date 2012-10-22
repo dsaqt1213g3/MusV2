@@ -1,6 +1,15 @@
-package dsa.mus.consola;
+package dsa.mus.lib;
 
-public abstract class Player {
+import java.io.Serializable;
+
+
+public abstract class Player implements Serializable{
+	
+	/**
+	 * UID version del dia 22/10/2012
+	 */
+	private static final long serialVersionUID = 22102012L;
+	
 	private String name;
 	private int position;
 	protected Card[] hand;
@@ -20,10 +29,11 @@ public abstract class Player {
 		return position;
 	}
 
-
-
 	public abstract boolean isMus();
 	public abstract Card[] discard();
 	public abstract void receive(Card[] cards);
+	public abstract void clearHand();
+	public abstract void showHand();
+	public abstract void notifyWinner(boolean win);
 	
 }

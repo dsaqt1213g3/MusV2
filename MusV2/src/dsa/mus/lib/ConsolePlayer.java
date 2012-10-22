@@ -1,17 +1,22 @@
-package dsa.mus.consola;
+package dsa.mus.lib;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+
 public class ConsolePlayer extends Player {
+
+	/**
+	 * UID version del dia 22/10/2012
+	 */
+	private static final long serialVersionUID = 22102012L;
 	
 	int handLength;
 	
 	public ConsolePlayer(String name, int position) {
 		super(name, position);
 		handLength = 0;
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -73,6 +78,7 @@ public class ConsolePlayer extends Player {
 		
 		return cards;
 	}
+	@Override
 	public void clearHand() {
 		handLength = 0;
 	}
@@ -82,11 +88,20 @@ public class ConsolePlayer extends Player {
 		handLength = handLength + cards.length;
 	}
 
+	@Override
 	public void showHand() {
 		System.out.print(getName() + ", tu mano es: ");
 		for(int i = 0; i < handLength; i++)
 			System.out.print(hand[i].toString() + " ");
 		System.out.println();
+	}
+
+	@Override
+	public void notifyWinner(boolean win) {
+		if(win)
+			System.out.println("Ha ganado " + getName());
+		else
+			System.out.println("No ha ganado " + getName());
 	}
 	
 }

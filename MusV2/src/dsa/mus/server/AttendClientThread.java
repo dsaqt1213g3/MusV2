@@ -3,33 +3,22 @@ package dsa.mus.server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.util.Random;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-
-import com.google.gson.Gson;
-
-import dsa.mus.lib.JsonQueris;
+import dsa.mus.lib.CMessage;
+import dsa.mus.lib.TypeMessage;
 import dsa.mus.lib.MySQL;
+import dsa.mus.lib.SocketPlayer;
 
 public class AttendClientThread extends Thread {
 
-	public final static String httpServer = "http://localhost:8080/MusV2/ObtenerNombre";
-	
 	int id;
 	Socket s;
 	ObjectInputStream sIn;
 	ObjectOutputStream sOut;
 	MySQL mySQL;
-	JsonQueris player;
+	SocketPlayer player;
+	Server server;
 
 	/**
 	 * @param s
@@ -37,82 +26,100 @@ public class AttendClientThread extends Thread {
 	 * @param sOut
 	 * @param mySQL
 	 */
-	public AttendClientThread(int id, Socket s, MySQL mySQL) {
+	public AttendClientThread(int id, Socket s, MySQL mySQL, Server server) {
 		super();
 		this.s = s;
     	try {
 			this.sIn = new ObjectInputStream( s.getInputStream() );
 			this.sOut = new ObjectOutputStream( s.getOutputStream() ); 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}    	 
 		this.mySQL = mySQL;
-	}
-
-	private static void guardarPartida(String ganador1, String ganador2, String jugador3, String jugador4) throws IOException
-	{
-		HttpClient httpclient = new DefaultHttpClient();		
-		HttpPost httppost = new HttpPost(httpServer);
-		
-		Gson g = new Gson(); 		 
-		String json = g.toJson(new JsonQueris(ganador1, ganador2, jugador3, jugador4));
-		
-		StringEntity stringEntity = new StringEntity(json);
-		stringEntity.setContentType("application/json");
-		httppost.setEntity(stringEntity);
-		
-		httpclient.execute(httppost);
+		this.server = server;
 	}
 	
-	public void run()
+	private void createMach()
 	{
-		while(true)
-    	{    
-			String name;
-			try {
-				name = (String) sIn.readObject();
-			} catch (ClassNotFoundException | IOException e) {
-				System.out.println(e.getMessage());
-				return;
+		AttendClientThread[] aCT = server.getClientWithoutMach().toArray(
+				new AttendClientThread[server.getClientWithoutMach().size()]);
+				
+		for( int i = 0; i < 4; i++)
+			try {									
+				server.getClientWithoutMach().remove(aCT[i]);
+
+				aCT[i].sOut.writeObject((Object)new CMessage(TypeMessage.START_GAME));
+			
+			} catch (IOException e) {
+				
+				System.out.println("Error enviando datos en el servidor: " + e.getMessage());
 			}
-    		
-    		this.player = new JsonQueris(name, "");
-   	
-			Server.getServerThreads().add(this);
-    		    		
-    		if(Server.getServerThreads().size() >= 4)
-    		{	
-    			int ganador = (int)(new Random().nextInt())%2 + 1;
-    			AttendClientThread[] aCT = Server.getServerThreads().toArray(new AttendClientThread[Server.getServerThreads().size()]);
-    			for( int i = 0; i < aCT.length; i++)
-					try {							
-						aCT[i].sOut.writeObject((i == ganador)||(i == ganador+2));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-    			Server.getServerThreads().remove(this);
-    			try {
-					guardarPartida(
-							aCT[ganador%4].player.getName(), aCT[(ganador + 2)%4].player.getName(), 
-							aCT[(ganador + 1)%4].player.getName(), aCT[(ganador + 3)%4].player.getName()
-					);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-    		}
-    		else
-    		{
-    			try {
-					sIn.readObject();
-				} catch (ClassNotFoundException | IOException e) {
-					// TODO Auto-generated catch block
-					Server.getServerThreads().remove(this);
-					System.out.println("Cliente " + player.getName() + " desconectado");
-				}
-    		}
-    	}   	
+		
+		AttendMachThread musMach = new AttendMachThread(new SocketPlayer[]{
+				aCT[0].player, aCT[1].player, aCT[2].player, aCT[3].player
+			});
+		
+				
+		musMach.start(); 
+	}
+	
+	private void attendClient() throws ClassNotFoundException, IOException
+	{
+		boolean clientConnected = true;
+		while(clientConnected)
+		{
+			CMessage message;
+			try {
+				message = (CMessage)sIn.readObject();
+			} catch( IOException e){
+				System.out.println("Conexion perdida con " + player.getName());
+				clientConnected = false; 
+				continue;
+			}
+			switch (message.getCode()) {
+			case IS_MUS:
+				this.player.addMessage(message.getBool());
+				synchronized (player) {	player.notify(); }				
+				break;
+			
+			case DISCARD:
+				this.player.addMessage(message.getCards());
+				synchronized (player) { player.notify(); }
+				break;
+
+			default:
+				clientConnected = false;
+				break;
+			}
+		}	
+		System.out.println("Desconectado a " + this.player.getName() + " con el thread " + this.getName());
+	}
+
+	public void run()
+	{   
+		String name;
+		try {
+			name = (String) sIn.readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+		
+		this.player = new SocketPlayer(name, 0, s, sIn, sOut);   	
+		server.getClientWithoutMach().add(this);
+		
+		System.out.println("Se ha conectado " + this.player.getName());
+		synchronized (this) {
+			if(server.getClientWithoutMach().size() >= 4)
+				createMach();
+		}
+		
+		try {
+			attendClient();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Cerrando thread " + player.getName());
 	}
 }
