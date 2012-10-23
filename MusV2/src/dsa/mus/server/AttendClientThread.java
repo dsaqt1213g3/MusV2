@@ -7,7 +7,6 @@ import java.net.Socket;
 
 import dsa.mus.lib.CMessage;
 import dsa.mus.lib.TypeMessage;
-import dsa.mus.lib.MySQL;
 import dsa.mus.lib.SocketPlayer;
 
 public class AttendClientThread extends Thread {
@@ -16,7 +15,6 @@ public class AttendClientThread extends Thread {
 	Socket s;
 	ObjectInputStream sIn;
 	ObjectOutputStream sOut;
-	MySQL mySQL;
 	SocketPlayer player;
 	Server server;
 
@@ -26,7 +24,7 @@ public class AttendClientThread extends Thread {
 	 * @param sOut
 	 * @param mySQL
 	 */
-	public AttendClientThread(int id, Socket s, MySQL mySQL, Server server) {
+	public AttendClientThread(int id, Socket s, Server server) {
 		super();
 		this.s = s;
     	try {
@@ -35,7 +33,6 @@ public class AttendClientThread extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}    	 
-		this.mySQL = mySQL;
 		this.server = server;
 	}
 	
@@ -58,8 +55,7 @@ public class AttendClientThread extends Thread {
 		AttendMachThread musMach = new AttendMachThread(new SocketPlayer[]{
 				aCT[0].player, aCT[1].player, aCT[2].player, aCT[3].player
 			});
-		
-				
+						
 		musMach.start(); 
 	}
 	
@@ -87,6 +83,19 @@ public class AttendClientThread extends Thread {
 				synchronized (player) { player.notify(); }
 				break;
 
+			case FINISH_GAME:
+				if(message.getBool())
+				{	
+					server.getClientWithoutMach().add(this);
+					synchronized (this) {
+						if(server.getClientWithoutMach().size() >= 4)
+							createMach();
+					}
+				}
+				else
+					clientConnected = false;
+				break;
+			
 			default:
 				clientConnected = false;
 				break;

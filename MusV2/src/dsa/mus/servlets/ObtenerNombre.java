@@ -295,8 +295,6 @@ public class ObtenerNombre extends HttpServlet {
 		Gson g = new Gson(); 
 		JsonQueris jQueri = g.fromJson(n, JsonQueris.class);
 		
-		System.out.println(n);
-		
 		switch (jQueri.getType()) {
 		case ACCES:
 			autenticacion(request, response, jQueri.getName(), jQueri.getPassword());

@@ -1,9 +1,7 @@
 package dsa.mus.lib;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-
 
 public class ConsolePlayer extends Player {
 
@@ -21,52 +19,28 @@ public class ConsolePlayer extends Player {
 
 	@Override
 	public boolean isMus() {
-		System.out.println(getName() + " tienes mus? (s/n)");
-		InputStreamReader isr = new InputStreamReader(System.in);
-		BufferedReader bf = new BufferedReader (isr);
-		String mus = "s";
-		try {
-			 mus = bf.readLine();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if((mus.equals("s") || mus.equals("S")))
-			return true;
-		else if((mus.equals("n") || mus.equals("N")))
-			return false;
-		else 
-		{
-			System.out.println("Respuesta incorrecta.");
-			return isMus();
-		}
+		boolean isMus = Console.yesNoQuestion(getName() + " tienes mus? (s/n)", 
+				new BufferedReader (new InputStreamReader(System.in)));
+		return isMus;
 	}
+	
 	@Override
 	public Card[] discard() {
-		InputStreamReader isr = new InputStreamReader(System.in);
-		BufferedReader bf = new BufferedReader (isr);
 		Card[] discards = new SpanishCard[4];
 		Card[] newHand = new SpanishCard[4];
 		
-		String line = "";
 		int nextDiscard = 0;
 		
 		for(int i = 0; i < hand.length; i++)
 		{
-			System.out.println("Deseas descartar el " + hand[i].toString() + "? (s/n)");
-			try {
-				 line = bf.readLine();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if((line.equals("s") || line.equals("S")))
+			if(Console.yesNoQuestion("Deseas descartar el " + hand[i].toString() + "? (s/n)", 
+					new BufferedReader (new InputStreamReader(System.in))))
+			{
 				discards[nextDiscard++] = hand[i];
-			else if((line.equals("n") || line.equals("N"))) 
+			}
+			else
+			{
 				newHand[i - nextDiscard] = hand[i];
-			else {
-				System.out.println("Respuesta incorrecta.");
-				i--;
 			}
 		}
 		

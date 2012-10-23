@@ -19,6 +19,7 @@ import org.apache.http.util.EntityUtils;
 import com.google.gson.Gson;
 
 import dsa.mus.lib.CMessage;
+import dsa.mus.lib.Console;
 import dsa.mus.lib.ConsolePlayer;
 import dsa.mus.lib.JsonQueris;
 import dsa.mus.lib.TypeMessage;
@@ -26,7 +27,15 @@ import dsa.mus.server.Server;
 
 public class Client {
 	
-	private static void clientOperations(ObjectInputStream sIn, ObjectOutputStream sOut, String name) throws ClassNotFoundException, IOException
+	int port;
+	InetAddress addres;
+	public Client(InetAddress addres, int port)
+	{
+		this.addres = addres;
+		this.port = port;
+	}
+	
+	private void clientOperations(ObjectInputStream sIn, ObjectOutputStream sOut,  BufferedReader bf, String name) throws ClassNotFoundException, IOException
 	{
     	ConsolePlayer player = new ConsolePlayer(name, 0);
     	
@@ -44,9 +53,8 @@ public class Client {
     		switch (message.getCode()) {
     		case START_GAME:
     			System.out.println("Iniciando partida");
-    			//sOut.writeObject(1);
     			break;
-    		
+    			
 			case IS_MUS:				
 				sOut.writeObject(new CMessage(TypeMessage.IS_MUS,player.isMus()));
 				break;
@@ -71,7 +79,8 @@ public class Client {
 				break;
 				
 			case  FINISH_GAME:
-				// TODO preguntar si quiere volver a jugar y avisar al servidor
+				sOut.writeObject(new CMessage(TypeMessage.FINISH_GAME, 
+						Console.yesNoQuestion("Jugar otra partida? (s/n)", bf)));
 				break;
 				
 			case DISCONNECT:
@@ -86,7 +95,7 @@ public class Client {
     	}
 	}
 	
-	private static boolean autenticacionHTTP(String name, String pass) throws IOException
+	private boolean autenticacionHTTP(String name, String pass) throws IOException
 	{
 		HttpClient httpclient = new DefaultHttpClient();		
 		HttpPost httppost = new HttpPost(Server.httpServer);
@@ -119,7 +128,7 @@ public class Client {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException
+	private void run()
 	{
 		Socket MyClient = null;
 		ObjectInputStream sIn = null;
@@ -131,17 +140,19 @@ public class Client {
 		String name = "", pass = "";
     		
         /* Introduccion de datos  */
-		System.out.print("Introduce el nombre: ");
-    	name = bf.readLine();
-    	System.out.print("Introduce la contraseña: ");
-    	pass = bf.readLine();
+		name = Console.inputString("Introduce el nombre: ", bf);
+		pass = Console.inputString("Introduce la contraseña: ", bf);
 		
-		if(!autenticacionHTTP(name, pass)) return;
+		try {
+			if(!autenticacionHTTP(name, pass)) return;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		try
 		{	
 			System.out.println("Conectando con el servidor.");
-			MyClient = new Socket(InetAddress.getLocalHost(), 4009);			
+			MyClient = new Socket(addres, port);			
 			
 			sOut = new ObjectOutputStream( MyClient.getOutputStream() );
 	        sIn = new ObjectInputStream( MyClient.getInputStream() );   
@@ -152,18 +163,33 @@ public class Client {
 	        System.exit(-1);
 		}   
 		
-		sOut.writeObject(name);
+		try {
+			sOut.writeObject(name);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		
 		try {
-			clientOperations(sIn, sOut, name);
-		} catch (ClassNotFoundException e) {
+			clientOperations(sIn, sOut, bf, name);
+		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
         
-		isr.close();
-		bf.close();
-        MyClient.close();
-        sIn.close();
-        sOut.close();			
+		try {
+			isr.close();
+			bf.close();
+	        MyClient.close();
+	        sIn.close();
+	        sOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public static void main(String[] args) throws IOException
+	{
+		Client cliente = new Client(InetAddress.getLocalHost(), 4009);
+		cliente.run();
 	}
 }
