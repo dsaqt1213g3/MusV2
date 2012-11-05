@@ -1,38 +1,46 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
-<html>
+<html lang="es">
+
 <head>
 
-<meta http-equiv="content-Type" content="text/html; charset=UTF-8">
-<script> 
-	function abrir(url) { 
-		open(url,'','top=600,left=600,width=600,height=500') ; 
-	} 
-</script> 
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>La Ley del Mus - Identificación</title>
+	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap-combined.min.css" rel="stylesheet">
 </head>
-
+<div class="container">
 <body background="madmen.png">
+    <div class="hero-unit">
+    <h1>LA LEY DEL MUS</h1>
+    <p>un sitio para jugar al mus con tus amiguetes</p>
+    <p>
+    <a class="btn btn-primary btn-large" href="FormularioRegistro.html" link>
+    Registrate     
+    </a>
+    para empezar a jugar
+    </p>
+    </div>
+    
+    <div class="hero-unit pull-right">   
+    <form action= "ObtenerNombre" method="get">
+    <input type="hidden" name="navegador" value="autenticacion">
+    <legend>Iniciar sesión</legend>
+    <label>Nombre de usuario</label>
+    <input type="text" name="nombre" placeholder="Type something…">
+    <p></p>
+    <label>Contraseña</label>
+    <input type="password" name="password"  placeholder="Type something…">
+    <p></p>
+    <button type="submit" class="btn" value="entrar">entrar</button>
+    </form>
+    </div>
+   
+<!-- SCRIPTS -->
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
 
-
-<h1 style="font-family:verdana">Autenticación</h1>
-<form action= "ObtenerNombre" method="get">
-	<input type="hidden" name="navegador" value="autenticacion">
-	Nombre <input type="text" name="nombre" size="10"/> <h1></h1>
-	Password <input type="password" name="password" size="10">  <h1></h1>
-	<input type="submit" value="entrar" > <h1></h1>
-</form>
-<a href="javascript:abrir('FormularioRegistro.html');">Registrarse</a> 
-
-<script type="text/javascript">
-	
-	//Auto ajust background image size
-	document.body.style.backgroundSize= innerWidth + "px " + innerHeight + "px";
-	window.onresize=resize;
-	function resize()
-	{
-		document.body.style.backgroundSize= innerWidth + "px " + innerHeight + "px";
-	}
-</script>
 
 </body>
+</div>
 </html>
